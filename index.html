@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Countdown Timer</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        #timer {
+            font-size: 30vw;
+            font-family: Arial;
+            text-align: center;
+        }
+        #startButton {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 15px;
+            padding: 5px 10px;
+            background-color: black;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            var countdown;
+            var status = 0; // 0-reset, 1-obs, 2-climbing, 3-paused
+            var audio1 = new Audio("beep-1.mp3");
+            var audio2 = new Audio("countdown.mp3");
+            var obsTime = 40;
+            var climbTime = 360;
+            var time = obsTime;
+
+            // display initial time
+            $("#timer").text("00:40");
+
+            // start or reset timer on button click
+            $("#startButton").click(function() {
+                handleStateChange();
+            });
+
+            // start or reset timer on space bar press
+            $(document).keydown(function(event) {
+                if (event.keyCode === 32) { // spacebar
+                    handleStateChange();
+                }
+            });
+
+            function handleStateChange() {
+                if (status === 0) {
+                    // Start observation timer
+                    status = 1;
+                    time = obsTime;
+                    countdown = setInterval(updateTimer, 1000);
+                    $("#startButton").text("Climbing");
+                } else if (status === 1) {
+                    // Start climbing timer
+                    status = 2;
+			clearInterval(countdown);
+                    time = climbTime;
+			countdown = setInterval(updateTimer, 1000);
+                    $("#startButton").text("Stop");
+                } else if (status === 2) {
+                    // Pause timer
+                    status = 3;
+                    clearInterval(countdown);
+                    $("#startButton").text("Reset");
+                } else if (status === 3) {
+                    // Reset timer
+                    status = 0;
+                    clearInterval(countdown);
+                    time = obsTime;
+                    $("#timer").text("00:40");
+                    $("#startButton").text("Start");
+                }
+            }
+
+            // Update timer every second
+            function updateTimer() {
+                var minutes = Math.floor(time / 60);
+                var seconds = time % 60;
+
+                if (time <= 60 && time > 59) {
+                    audio1.play();
+                }
+
+                if (time <= 5 && time > 0 && status === 2) {
+                    audio2.play();
+                }
+
+                if (time < 0) {
+                    clearInterval(countdown);
+                    $("#timer").text("00:00");
+                } else {
+                    time--;
+                    $("#timer").text(("0" + minutes).slice(-2) + ":" + ("0" + seconds).slice(-2));
+                }
+            }
+        });
+    </script>
+</head>
+<body>
+    <div id="timer"></div>
+    <button id="startButton">Start</button>
+</body>
+</html>
